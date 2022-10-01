@@ -37,9 +37,6 @@ df_test = df[df['Epoch'] > test_cutoff_date]
 df_val = df[(df['Epoch'] > val_cutoff_date) & (df['Epoch'] <= test_cutoff_date)]
 df_train = df[df['Epoch'] <= val_cutoff_date]
 
-"""scaler = MinMaxScaler()
-scaler = scaler.fit(df_train)
-df_for_training_scaled = scaler.transform(df_train)"""
 trainX = []
 trainY = []
 trainY = df_train['sigmaPeak_doy'].to_numpy().reshape(-1,1)
@@ -48,26 +45,25 @@ trainX, trainY = np.array(trainX), np.array(trainY)
 print(trainX.shape)
 print(trainY.shape)
 verbose, epochs, batch_size = 2, 70, 128
-#n_timesteps, n_features, n_outputs = train_x.shape[1], train_x.shape[2], train_y.shape[1]
-# define model
+
 model = Sequential()
 model.add(Bidirectional(LSTM(64, activation='relu', input_shape=(trainX.shape[1], trainX.shape[2]),return_sequences=True)))
-                             #return_sequences=True))
 model.add(Bidirectional(LSTM(32, activation='relu', return_sequences=True)))
 model.add(Dropout(0.2))
 model.add(Flatten())
-model.add(Dense(64, activation='relu'))#, return_sequences=False))
-model.add(Dense(8, activation='relu'))#, return_sequences=False))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(8, activation='relu'))
 model.add(Dense(trainY.shape[1]))
 """model = Sequential()
 model.add(LSTM(200, activation='relu', input_shape=(trainX.shape[1], trainX.shape[2])))
 model.add(Dense(100, activation='relu'))
 model.add(Dense(n_outputs))"""
-trainX = np.asarray(trainX).astype('float32')
-trainY = np.asarray(trainY).astype('float32')
+trainX = np.asarray(trainX).astype('float')
+trainY = np.asarray(trainY).astype('float')
+
 model.compile(loss='mse', optimizer='adam')
+model.fit(trainX, trainY, epochs=epochs, batch_size=batch_size, verbose=verbose)
+
 model.summary()
 
-model.fit(trainX, trainY, epochs=epochs, batch_size=batch_size, verbose=verbose)
 model.save('.\\model_lstm')
-# fit network
